@@ -1,0 +1,133 @@
+{% extends 'base.html' %} 
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='styles/style2.css')}}">
+
+<div id="room-container">
+  <h1 id="home-header"><img class="avatar avatar-48 bg-light rounded-circle text-white p-2"
+    src="https://raw.githubusercontent.com/twbs/icons/main/icons/person-fill.svg"> {{uname}}💬<i>To :</i> {{va.name}} </h1>
+
+
+  <div id="chat-room-widget2">
+    <div id="msgs-container2">
+      <ul id="messages2">
+        <h3>Users<h3>
+        {% for data in value %}
+        {%if data['name'] != uname%}
+        <ul class="list-unstyled chat-list mt-2 mb-0">
+          
+            <li class="clearfix">
+                <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar" height="40px" width="40px">
+                <div class="about">
+                    <div class="name">
+
+                      
+
+                        <h6><li> -<a href="\chat\{{data['id']}}"><button class="send-btn"  name="{{data['name']}}" value="{{data['id']}}" >
+                          {{data['name']}}</button></a>   <b><strong id="{{data['room_id']}}" > </strong></b> </li></h6>
+                      
+                        
+                      
+                        </div>                                           
+                </div>
+            </li>     
+                                     
+            
+        </ul>
+        {%endif%}
+        {%endfor%}
+      </ul>
+    </div>
+  </div>
+
+
+
+  <div id="chat-room-widget">
+    <div id="msgs-container">
+      <ul id="messages">
+
+        {%for value in data%} 
+            {%if value.message_from == roomid %}
+            <div style="text-align:right;"><strong>{{uname}}</strong>:{{value.message}}  &nbsp;{{value.time}}<br></div>
+            {%else%}
+            <div style="text-align:left;"><strong>{{va.name}}</strong>:{{value.message}}  &nbsp;{{value.time}}<br></div>
+            {%endif%}
+            {%endfor%}
+      </ul>
+    </div>
+
+    <div id="message-box">
+      <input
+        type="text"
+        placeholder="Enter your message"
+        id="message-input"
+        name="message"
+      />
+      <button type="submit" class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io();
+    var sender = {{usrf_id|tojson|safe}};
+    var receiver = {{usrt_id|tojson|safe}};
+    var user1 = {{uname|tojson|safe}};
+    var val = {{value|tojson|safe}};
+    var dict={};
+    const time = new Date();
+    const currenttime=time.toLocaleString()
+
+    function sendMessage(){
+      let message_input = document.getElementById("message-input").value;
+      socket.send({message_input,sender,receiver,currenttime})
+      document.getElementById("message-input").value='';
+    
+    }
+    socket.on('message',function(data){
+    createMessage(data.t_rid,data.f_rid,data.name,data.msg);
+    console.log(data)   
+    })
+
+
+
+    const messages = document.getElementById("messages");
+    const notif = document.getElementById(val.room_id);
+    const createMessage = (to,user,name, msg) => {
+      const notif = document.getElementById(user)
+      
+    if((sender==user && receiver==to)||(receiver==user && sender==to))
+    {
+      
+      var senderIsUser=user1===name;
+      
+      const content = `
+      <div class="text message-item ${
+        senderIsUser ? "self-message-item" : "peer-message-item"
+      }">
+      <div class="text">
+          <span>
+              <strong>${name}</strong>: ${msg}
+          </span>
+          <span class="muted">
+              ${new Date().toLocaleString()}
+          </span>
+      </div>
+      `;
+      messages.innerHTML += content;
+    }
+    else{
+      if(dict.hasOwnProperty(user)){
+        dict[user].push(msg)
+      }else{
+        dict[user] = []
+        dict[user].push(msg)
+      }
+
+      notif.innerHTML = dict[user].length;
+
+
+    }
+    };
+    
+</script>
+{%endblock%}

@@ -1,0 +1,22 @@
+{% extends "base.html"%}
+{%block head%} 
+View
+{%endblock%}
+{%block title%} 
+        View
+{%endblock%}
+{%block content%} 
+{%for item in value%}
+<pre>
+Name : {{item.name}} Password : {{item.password}} Email : {{item.email}}
+
+</pre>
+{%endfor%}
+{%for item in value2%}
+<pre>
+<b>Message :</b> {{item.message}} <b>Message From :</b> {{item.message_from}} <b>Message To : </b>{{item.message_to}} <b>Time : </b>{{item.time}}
+
+</pre>
+{%endfor%}
+
+{%endblock%}
