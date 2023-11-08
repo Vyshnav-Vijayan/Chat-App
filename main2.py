@@ -150,7 +150,7 @@ def login_flutter():
         print("hello")
         user = Users.query.filter(Users.name == username).first()
         if user:
-            if user.password == password:
+            if check_password_hash():
                 return jsonify({"status":"login successfull"})
             else:
                 return jsonify({"error":"failed"}),404
@@ -194,7 +194,6 @@ def login2_flutter():
                 session["room_id"]=search2.room_id
                 return jsonify(uname=session["name"],value=Users.query.all())
             else:
-                flash("Can't Logg in!!!")
                 return jsonify({'error': " err!!!"}),404
         else:
             return jsonify({'error': " err!!!"}),404
