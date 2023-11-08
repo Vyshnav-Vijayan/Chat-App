@@ -202,7 +202,7 @@ def login2_flutter():
 
                 v=Users.query.all()
                 for data in v:
-                    value={'username':data.username        
+                    value={'username':data.name        
                 }
                 return jsonify(value)
             else:
@@ -215,7 +215,7 @@ def login2_flutter():
 def user_list():
     value=Users.query.all()
     for data in value:
-       result={'username':data.username        
+       result={'username':data.name        
     }
     return jsonify(result)
         
