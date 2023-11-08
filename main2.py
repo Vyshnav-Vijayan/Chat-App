@@ -152,6 +152,9 @@ def login_flutter():
         if user:
             if user.password == password:
                 return jsonify({"status":"login successfull"})
+            else:
+                return jsonify({"error":"failed"}),404
+                
         else:
             return jsonify({"error":"failed"}),404
     
