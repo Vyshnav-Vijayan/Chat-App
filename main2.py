@@ -147,7 +147,7 @@ def login():
 def login_flutter():
         username = request.json.get('username')
         password = request.json.get('password')
-
+        print("hello")
         user = Users.query.filter(Users.name == username).first()
         if user:
             if user.password == password:
