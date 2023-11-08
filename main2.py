@@ -1,4 +1,4 @@
-from flask import Flask,render_template,request,flash,redirect,url_for,session
+from flask import Flask,render_template,request,flash,redirect,url_for,session,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -81,6 +81,17 @@ def index():
     else:
         return render_template("register.html")
 
+
+
+@app.route('/home_flutter')
+def index_flutter():
+    if "name" in session:
+        return jsonify(uname=session["name"],value=Users.query.all())
+    else:
+        return jsonify({'error': "user already regitered"}),404
+    
+
+
 @app.route('/register',methods=['POST','GET'])
 def register():
     if request.method=="POST":
@@ -101,6 +112,29 @@ def register():
             db.session.commit()
             flash("You have been regitered sucessfully")
             return render_template("login.html")
+        
+
+@app.route('/register_flutter',methods=['POST','GET'])
+def register_flutter():
+    if request.method=="POST":
+        uname=request.form['user_name']
+        uemail=request.form['user_email']
+        upassword=request.form['user_password']
+        hash_pwd=generate_password_hash(upassword)
+        search=Users.query.filter_by(email=uemail).first()
+        if search:
+            return jsonify({'error': "user already regitered"}),404
+        else:
+            usr=Users(uname,uemail,hash_pwd)
+            db.session.add(usr)
+            db.session.commit()
+            rm=Room(''.join(random.SystemRandom().choice(string.digits) for _ in range(5)),usr._id)
+            db.session.add(rm)
+            db.session.commit()
+            return jsonify("Registered")
+
+
+
 
 @app.route('/login')
 def login():
@@ -108,6 +142,15 @@ def login():
         return render_template("user.html",uname=session["name"],value=Users.query.all())
     else:
         return render_template("login.html")
+    
+@app.route('/login_flutter')
+def login_flutter():
+    if "name" in session:
+        return jsonify(uname=session["name"],value=Users.query.all())
+    else:
+        jsonify({'error': "user already regitered"}),404
+    
+
 @app.route('/login2',methods=['POST'])
 def login2():
     if request.method=="POST":
@@ -128,16 +171,35 @@ def login2():
             return render_template("login.html")
     return render_template("login.html")
 
+
+@app.route('/login2_flutter',methods=['POST'])
+def login2_flutter():
+    if request.method=="POST":
+        uemail=request.form['user_email']
+        upwd=request.form['user_password']
+        search=Users.query.filter_by(email=uemail).first()
+        if search:
+            if check_password_hash(search.password,upwd):
+                session["name"]=search.name
+                session["user_id"]=search._id
+                search2=Room.query.filter_by(user_id=search._id).first()
+                session["room_id"]=search2.room_id
+                return jsonify(uname=session["name"],value=Users.query.all())
+            else:
+                flash("Can't Logg in!!!")
+                return jsonify({'error': " err!!!"}),404
+        else:
+            return jsonify({'error': " err!!!"}),404
+    return jsonify({'error': " err!!!"}),404
+
+
+
 @app.route('/logout')
 def logout():
     session.pop("name",None)
     return redirect(url_for('login'))
 
-@app.route('/view')
-def view():
-    details=Users.query.all()
-    details2=Messages.query.all()
-    return render_template('view.html',value=details,value2=details2)
+
 
 @app.route('/user')
 def user():
@@ -145,14 +207,22 @@ def user():
         return render_template("user.html",uname=session["name"],value=Users.query.all())
     else:
         return render_template("register.html")
+    
+@app.route('/user_flutter')
+def user_flutter():
+    if "name" in session:
+        return jsonify(uname=session["name"],value=Users.query.all())
+    else:
+        return jsonify({'error': " err!!!"}),404
+    
+
 @app.route('/chat/<int:id>')
 def chat(id):
     if "name" in session:
         usrf=Room.query.filter_by(_id=session["user_id"]).first()
         usrt=Room.query.filter_by(_id=id).first()
 
-        # userf_message = Messages.query.filter_by(message_from = usrf.room_id,message_to = usrt.room_id).all()
-        # usert_message = Messages.query.filter(Messages.message_from == usrt.room_id,Messages.message_to == usrf.room_id).all()
+
         roomid=session["room_id"]
         all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
         uf_name=Users.query.filter_by(_id=session["user_id"]).first()
@@ -163,27 +233,25 @@ def chat(id):
         return render_template("chat.html",roomid=roomid,uf_name=uf_name,ut_name=ut_name,usrf_id=usrf.room_id,usrt_id=usrt.room_id,uname=session['name'],va=Users.query.filter_by(_id=id).first(),data=all_msg,value=all_users_dict)
     else:
         return render_template("register.html")
-@app.route('/send/<int:id>',methods=['POST'])
-def send__data(id):
+
+
+@app.route('/chat_flutter/<int:id>')
+def chat_flutter(id):
     if "name" in session:
-        if request.method=="POST":
-            message=request.form['msg']
-            usrf=Room.query.filter_by(_id=session["user_id"]).first()
-            usrt=Room.query.filter_by(_id=id).first()                   
-            a=Messages(message,usrf.room_id,usrt.room_id,datetime.now())
-            db.session.add(a)
-            db.session.commit()
-            # session["sendr"]=usrf
-            # session["recir"]=usrt
-            roomid=session["room_id"]
-            # userf_message = Messages.query.filter_by(message_from = usrf.room_id,message_to = usrt.room_id).all()
-            # usert_message = Messages.query.filter(Messages.message_from == usrt.room_id,Messages.message_to == usrf.room_id).all()
-            all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
-            return render_template("chat.html",roomid=roomid,usrf_id=usrf.room_id,usrt_id=usrt.room_id,uname=session['name'],va=Users.query.filter_by(_id=id).first(),data=all_msg,value=Users.query.all())
+        usrf=Room.query.filter_by(_id=session["user_id"]).first()
+        usrt=Room.query.filter_by(_id=id).first()
+
+
+        roomid=session["room_id"]
+        all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
+        uf_name=Users.query.filter_by(_id=session["user_id"]).first()
+        ut_name=Users.query.filter_by(_id=id).first()
+        all_users = Users.query.all()
+        all_users_dict = [user.to_dict(1) for user in all_users]
+        print(all_users_dict,"all user")
+        return jsonify(roomid=roomid,uf_name=uf_name,ut_name=ut_name,usrf_id=usrf.room_id,usrt_id=usrt.room_id,uname=session['name'],va=Users.query.filter_by(_id=id).first(),data=all_msg,value=all_users_dict)
     else:
-        return render_template("register.html")       
-
-
+        return jsonify({'error': " err!!!"}),404
 
 
 
