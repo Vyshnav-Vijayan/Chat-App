@@ -80,9 +80,7 @@ def index():
         return render_template("user.html",uname=session["name"],value=Users.query.all())
     else:
         return render_template("register.html")
-
-
-
+    
 @app.route('/home_flutter')
 def index_flutter():
     if "name" in session:
@@ -117,9 +115,9 @@ def register():
 @app.route('/register_flutter',methods=['POST','GET'])
 def register_flutter():
     if request.method=="POST":
-        uname=request.form['user_name']
-        uemail=request.form['user_email']
-        upassword=request.form['user_password']
+        uname=request.json.get('user_name')
+        uemail=request.json.get('user_email')
+        upassword=request.json.get('user_password')
         hash_pwd=generate_password_hash(upassword)
         search=Users.query.filter_by(email=uemail).first()
         if search:
@@ -143,27 +141,27 @@ def login():
     else:
         return render_template("login.html")
     
-@app.route('/login_flutter',methods=["POST"])
-def login_flutter():
-        username = request.json.get('username')
-        password = request.json.get('password')
-        print("hello")
-        user = Users.query.filter(Users.name == username).first()
-        if user:
-            if check_password_hash():
-                return jsonify({"status":"login successfull"})
-            else:
-                return jsonify({"error":"failed"}),404
+# @app.route('/login_flutter',methods=["POST"])
+# def login_flutter():
+#         username = request.json.get('username')
+#         password = request.json.get('password')
+#         print("hello")
+#         user = Users.query.filter(Users.name == username).first()
+#         if user:
+#             if check_password_hash():
+#                 return jsonify({"status":"login successfull"})
+#             else:
+#                 return jsonify({"error":"failed"}),404
                 
-        else:
-            return jsonify({"error":"failed"}),404
+#         else:
+#             return jsonify({"error":"failed"}),404
     
 
 @app.route('/login2',methods=['POST'])
 def login2():
     if request.method=="POST":
-        uemail=request.form['user_email']
-        upwd=request.form['user_password']
+        uemail=request.json.get('user_email')
+        upwd=request.json.get('user_password')
         search=Users.query.filter_by(email=uemail).first()
         if search:
             if check_password_hash(search.password,upwd):
@@ -183,8 +181,8 @@ def login2():
 @app.route('/login2_flutter',methods=['POST'])
 def login2_flutter():
     if request.method=="POST":
-        uemail=request.form['user_email']
-        upwd=request.form['user_password']
+        uemail=request.json.get('user_email')
+        upwd=request.json.get('user_password')
         search=Users.query.filter_by(email=uemail).first()
         if search:
             if check_password_hash(search.password,upwd):
