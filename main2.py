@@ -42,6 +42,15 @@ class Users(db.Model):
 
         return data
     
+    def user_details(self):
+        data = {
+            "id" :self._id,
+            "name" :self.name,
+            "email" :self.email,
+            "password" :self.password,
+            
+        }
+    
 class Room(db.Model):
     _id=db.Column("id",db.Integer,primary_key=True)
     room_id=db.Column(db.String(100))
@@ -190,13 +199,26 @@ def login2_flutter():
                 session["user_id"]=search._id
                 search2=Room.query.filter_by(user_id=search._id).first()
                 session["room_id"]=search2.room_id
-                return jsonify(uname=session["name"],value=Users.query.all())
+
+                v=Users.query.all()
+                for data in v:
+                    value={'username':data.username        
+                }
+                return jsonify(value)
             else:
                 return jsonify({'error': " wrong password"}),404
         else:
             return jsonify({'error': " no user"}),404
     return jsonify({'error': " wrong request!!!"}),404
 
+@app.route('/user_list')
+def user_list():
+    value=Users.query.all()
+    for data in value:
+       result={'username':data.username        
+    }
+    return jsonify(result)
+        
 
 
 @app.route('/logout')
