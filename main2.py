@@ -50,6 +50,7 @@ class Users(db.Model):
             "password" :self.password,
             
         }
+        return data
     
 class Room(db.Model):
     _id=db.Column("id",db.Integer,primary_key=True)
@@ -214,12 +215,9 @@ def login2_flutter():
 @app.route('/user_list')
 def user_list():
     value=Users.query.all()
-    for data in value:
-       result={'username':data.name        
-    }
+    result = [user.user_details() for user in value]
     return jsonify(result)
         
-
 
 @app.route('/logout')
 def logout():
