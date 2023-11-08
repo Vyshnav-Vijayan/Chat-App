@@ -143,12 +143,17 @@ def login():
     else:
         return render_template("login.html")
     
-@app.route('/login_flutter')
+@app.route('/login_flutter',methods=["POST"])
 def login_flutter():
-    if "name" in session:
-        return jsonify(uname=session["name"],value=Users.query.all())
-    else:
-        jsonify({'error': "user already regitered"}),404
+        username = request.json.get('username')
+        password = request.json.get('password')
+
+        user = Users.query.filter(Users.name == username).first()
+        if user:
+            if user.password == password:
+                return jsonify({"status":"login successfull"})
+        else:
+            return jsonify({"error":"failed"}),404
     
 
 @app.route('/login2',methods=['POST'])
