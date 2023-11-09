@@ -179,8 +179,8 @@ def login():
 @app.route('/login2',methods=['POST'])
 def login2():
     if request.method=="POST":
-        uemail=request.json.get('user_email')
-        upwd=request.json.get('user_password')
+        uemail=request.form['user_email']
+        upwd=request.form['user_password']
         search=Users.query.filter_by(email=uemail).first()
         if search:
             if check_password_hash(search.password,upwd):
@@ -284,11 +284,8 @@ def chat_flutter(id):
             all_users = Users.query.all()
             all_users_dict = [user.to_dict(1) for user in all_users]
             print(all_users_dict,"all user")
-            data2={
-                "allmsg3":all_msg2,
-                "all_users_dict2":all_users_dict
-            }
-            return jsonify(data2)
+
+            return jsonify(all_msg2)
         else:
             return jsonify({'error': " user not found!!!"}),404
     else:
