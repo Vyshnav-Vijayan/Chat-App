@@ -271,8 +271,9 @@ def chat(id):
 def chat_flutter(id):
     if "name" in session:
         if request.method=="POST":
-            id=request.json.get('loginId')    
-            usrf=Room.query.filter_by(_id=session["user_id"]).first()
+            id=request.json.get('loginId')
+            user_id=request.json.get('chatPersonId')   
+            usrf=Room.query.filter_by(_id=user_id).first()
             usrt=Room.query.filter_by(_id=id).first()
 
 
