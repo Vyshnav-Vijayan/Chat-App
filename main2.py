@@ -267,23 +267,27 @@ def chat(id):
         return render_template("register.html")
 
 
-@app.route('/chat_flutter/<int:id>')
+@app.route('/chat_flutter')
 def chat_flutter(id):
     if "name" in session:
-        usrf=Room.query.filter_by(_id=session["user_id"]).first()
-        usrt=Room.query.filter_by(_id=id).first()
+        if request.method=="POST":
+            id=request.json.get('loginId')    
+            usrf=Room.query.filter_by(_id=session["user_id"]).first()
+            usrt=Room.query.filter_by(_id=id).first()
 
 
 
-        all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
-        all_msg2=[msg.user_message for msg in all_msg]
+            all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
+            all_msg2=[msg.user_message for msg in all_msg]
 
-        all_users = Users.query.all()
-        all_users_dict = [user.to_dict(1) for user in all_users]
-        print(all_users_dict,"all user")
-        return jsonify(all_msg2,all_users_dict)
+            all_users = Users.query.all()
+            all_users_dict = [user.to_dict(1) for user in all_users]
+            print(all_users_dict,"all user")
+            return jsonify(all_msg2,all_users_dict)
+        else:
+            return jsonify({'error': " user not found!!!"}),404
     else:
-        return jsonify({'error': " err!!!"}),404
+        return jsonify({'error': " login error"}),404
 
 
 
