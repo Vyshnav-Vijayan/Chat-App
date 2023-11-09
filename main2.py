@@ -268,7 +268,7 @@ def chat(id):
 
 
 @app.route('/chat_flutter')
-def chat_flutter(id):
+def chat_flutter():
     if "name" in session:
         if request.method=="POST":
             id=request.json.get('loginId')
