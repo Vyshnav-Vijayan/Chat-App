@@ -74,6 +74,15 @@ class Messages(db.Model):
         self.message_from = message_from
         self.message_to = message_to
         self.time = time
+    def user_message(self):
+        data = {
+            "id" :self._id,
+            "message_from" :self.message_from,
+            "message_to" :self.message_to,
+            "time" :self.time,
+            
+        }
+        return data
 
 room={}
 def generate_room_code(length):
@@ -265,14 +274,14 @@ def chat_flutter(id):
         usrt=Room.query.filter_by(_id=id).first()
 
 
-        roomid=session["room_id"]
+
         all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
-        uf_name=Users.query.filter_by(_id=session["user_id"]).first()
-        ut_name=Users.query.filter_by(_id=id).first()
+        all_msg2=[msg.user_message for msg in all_msg]
+
         all_users = Users.query.all()
         all_users_dict = [user.to_dict(1) for user in all_users]
         print(all_users_dict,"all user")
-        return jsonify(roomid=roomid,uf_name=uf_name,ut_name=ut_name,usrf_id=usrf.room_id,usrt_id=usrt.room_id,uname=session['name'],va=Users.query.filter_by(_id=id).first(),data=all_msg,value=all_users_dict)
+        return jsonify(all_msg2,all_users_dict)
     else:
         return jsonify({'error': " err!!!"}),404
 
