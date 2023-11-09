@@ -284,7 +284,11 @@ def chat_flutter(id):
             all_users = Users.query.all()
             all_users_dict = [user.to_dict(1) for user in all_users]
             print(all_users_dict,"all user")
-            return jsonify(all_msg2,all_users_dict)
+            data2={
+                "allmsg3":all_msg2,
+                "all_users_dict2":all_users_dict
+            }
+            return jsonify(data2)
         else:
             return jsonify({'error': " user not found!!!"}),404
     else:
