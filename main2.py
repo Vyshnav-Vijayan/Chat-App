@@ -202,9 +202,7 @@ def login2_flutter():
                 session["room_id"]=search2.room_id
 
                 v=Users.query.all()
-                for data in v:
-                    value={'username':data.name        
-                }
+                value = [user.user_details() for user in v]
                 return jsonify(value)
             else:
                 return jsonify({'error': " wrong password"}),404
