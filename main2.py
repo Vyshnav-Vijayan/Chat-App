@@ -141,7 +141,7 @@ def register_flutter():
         hash_pwd=generate_password_hash(upassword)
         search=Users.query.filter_by(email=uemail).first()
         if search:
-            return jsonify({'error': "user already regitered"}),404
+            return jsonify({'error': "user already regitered!"}),404
         else:
             usr=Users(uname,uemail,hash_pwd)
             db.session.add(usr)
