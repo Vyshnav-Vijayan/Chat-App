@@ -212,7 +212,7 @@ def login2_flutter():
 
                 v=Users.query.all()
                 value = [user.user_details() for user in v]
-                return jsonify(value)
+                return jsonify({"value":value, "userid":search._id , "username":search.name })
             else:
                 return jsonify({'error': " wrong password"}),404
         else:
