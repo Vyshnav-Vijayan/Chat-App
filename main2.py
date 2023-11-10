@@ -223,10 +223,8 @@ def login2_flutter():
 @app.route('/user_list')
 def user_list():
     value=Users.query.all()
-    value2=Messages.query.all()
     result = [user.user_details() for user in value]
-    result2 = [user.user_message() for user in value2]
-    return jsonify({"result":result,"msg":result2})
+    return jsonify(result)
         
 
 @app.route('/logout')
