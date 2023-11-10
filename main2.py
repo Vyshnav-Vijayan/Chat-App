@@ -269,6 +269,7 @@ def chat(id):
 
 @app.route('/chat_flutter')
 def chat_flutter():
+    if "name" in session:
         if request.method=="POST":
             id=request.json.get('loginId')
             user_id=request.json.get('chatPersonId')   
@@ -287,7 +288,8 @@ def chat_flutter():
             return jsonify(all_msg2)
         else:
             return jsonify({'error': " user not found!!!"}),404
-        
+    else:
+        return jsonify({'error': " login error"}),404
 
 
 
