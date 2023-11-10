@@ -79,6 +79,7 @@ class Messages(db.Model):
             "id" :self._id,
             "message_from" :self.message_from,
             "message_to" :self.message_to,
+            "message" :self.message,
             "time" :self.time,
             
         }
@@ -222,8 +223,10 @@ def login2_flutter():
 @app.route('/user_list')
 def user_list():
     value=Users.query.all()
+    value2=Messages.query.all()
     result = [user.user_details() for user in value]
-    return jsonify(result)
+    result2 = [user.user_message() for user in value2]
+    return jsonify({"result":result,"msg":result2})
         
 
 @app.route('/logout')
