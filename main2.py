@@ -270,16 +270,17 @@ def chat(id):
 
 @app.route('/chat_flutter',methods=['POST'])
 def chat_flutter():
-        if request.method=="POST":
-            id=request.json.get('login_Id')
-            user_id=request.json.get('chat_PersonId')   
-            usrf=Room.query.filter_by(_id=user_id).first()
-            usrt=Room.query.filter_by(_id=id).first()
-            all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
-            result = [user.user_message() for user in all_msg]
-            return jsonify(result)      
-        else:
-            return jsonify({'error': " login error!!!"}),404
+    if request.method=="POST":
+        id=request.json.get('login_Id')
+        user_id=request.json.get('chat_PersonId')   
+        usrf=Room.query.filter_by(user_id=user_id).first()
+        usrt=Room.query.filter_by(user_id=id).first()
+        all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
+        result = [user.user_message() for user in all_msg]
+        print(result)
+        return jsonify(result)      
+    else:
+        return jsonify({'error': " login error!!!"}),404
 
 
 
