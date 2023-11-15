@@ -278,7 +278,7 @@ def chat_flutter():
         all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
         result = [user.user_message() for user in all_msg]
         print(result)
-        return jsonify(result)      
+        return jsonify({"result":result,"login_Id":id,"chat_PersonId":user_id})      
     else:
         return jsonify({'error': " login error!!!"}),404
 
