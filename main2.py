@@ -43,6 +43,7 @@ class Users(db.Model):
         return data
     
     def user_details(self):
+        room_id = Room.query.filter_by(user_id = self._id).first()
         data = {
             "id" :self._id,
             "name" :self.name,
@@ -50,6 +51,7 @@ class Users(db.Model):
             "password" :self.password,
             
         }
+        data["room_id"]=room_id.room_id
         return data
     
 class Room(db.Model):
@@ -227,9 +229,9 @@ def user_list():
     value=Users.query.all()
     result = [user.user_details() for user in value]
 
-    value2=Messages.query.all()
-    result2=[msg.user_message() for msg in value2]
-    return jsonify({"result":result,"result2":result2})
+    # value2=Messages.query.all()
+    # result2=[msg.user_message() for msg in value2]
+    return jsonify(result)
         
 
 @app.route('/logout')
