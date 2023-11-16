@@ -205,6 +205,7 @@ def login2_flutter():
         upwd=request.json.get('user_password')
         search=Users.query.filter_by(email=uemail).first()
         if search:
+            print(search)
             if check_password_hash(search.password,upwd):
                 session["name"]=search.name
                 session["user_id"]=search._id
@@ -213,6 +214,7 @@ def login2_flutter():
 
                 v=Users.query.all()
                 value = [user.user_details() for user in v]
+                print(session,"this is session")
                 return jsonify({"value":value, "userid":search._id , "username":search.name })
             else:
                 return jsonify({'error': " wrong password"}),404
@@ -286,13 +288,15 @@ def chat_flutter():
 
 @socketio.on("connect")
 def connect():
-    user_name = session["name"]
-    room = session["room_id"]
+    print("this is session 2 ",session)
+    user_name = session.get('name')
+    room = session.get("room_id")
     join_room(room)
     print(user_name,"connected!")
 
 @socketio.on("message")
 def get_and_store_message(data):
+    print("atlears rehced here")
     if data['message_input']:
         msg = data['message_input']
         sender = data['sender']
