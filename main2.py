@@ -16,7 +16,19 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 socketio = SocketIO(app,cors_allowed_origin="*")
 db=SQLAlchemy(app)
 
+class RequestException(Exception):
+    def __init__(self, status_code=500, message=""):
+        self.status_code = status_code
+        self.message = message
+        super().__init__(self.message)
 
+class BadRequestException(RequestException):
+    def __init__(self, message=""):
+        super().__init__(message=message, status_code=400)
+
+class UnauthorisedAccessException(RequestException):
+    def __init__(self, message=""):
+        super().__init__(message=message, status_code=403)
 
 class Users(db.Model):
     _id=db.Column("id",db.Integer,primary_key=True)
@@ -31,11 +43,19 @@ class Users(db.Model):
         self.email=email
         self.password=password
     def generate_token(self,validity_duration_hours=1):
-        self.token = base64.b64encode(os.urandom(75)).decode('utf-8')
+        token = base64.b64encode(os.urandom(75)).decode('utf-8')
         current_time = datetime.utcnow()
         expire_time = current_time + timedelta(hours=validity_duration_hours)
         expire_time_str = expire_time.strftime("%Y-%m-%d %H:%M:%S UTC")
-        self.token_expire = expire_time_str
+        
+        print(token,"this is token")
+        setattr(self,'token',token)
+        
+        setattr(self,'token_expire',expire_time_str)
+        db.session.commit()
+        print(self.token)
+
+        return (self.token,self.token_expire)
     def to_dict(self,propagation):
         data = {
             "id" :self._id,
@@ -211,11 +231,11 @@ def login2_flutter():
                 session["room_id"]=search2.room_id
 
                 search.generate_token()
-
+                
                 v=Users.query.all()
                 value = [user.user_details() for user in v]
                 print(session,"this is session")
-                return jsonify({"value":value, "userid":search._id , "username":search.name })
+                return jsonify({"value":value, "userid":search._id , "username":search.name ,"token":search.token })
             else:
                 return jsonify({'error': " wrong password"}),404
         else:
@@ -287,6 +307,52 @@ def chat_flutter():
         return jsonify(result)      
     else:
         return jsonify({'error': " login error!!!"}),404
+
+
+
+
+# from app.service.common.auth import token_auth
+# from app.service.common.session_factory import tenant_session_scope
+# from app.errors.types import UnauthorisedAccessException
+
+
+# def allowed_users(user_types=[], permissions={}, ):
+#     def wrapper(f):
+
+#         def wrapped_function(*args, **kwargs):
+#             unauthorised = False
+#             current_user = token_auth.current_user()
+#             if current_user.user_type not in user_types:
+#                 does_not_have_permissions = True
+#                 if current_user.user_type != 'tenant_admin':
+#                     with tenant_session_scope() as session:
+#                         if 'employee' in permissions.keys():
+#                             emps = session.query(Member).filter(Member.user_id == current_user.id).join(Employee,Employee.member_id==Member.id).join(EmployeeRole,
+#                                                                                                         EmployeeRole.employee_id == Employee.id).join(
+#                                 RoleMaster, RoleMaster.id == EmployeeRole.role_id).join(RoleActivityPermission,
+#                                                                                     RoleActivityPermission.role_id == EmployeeRole.id,getattr(RoleActivityPermission, permissions['value']) == 'yes').join(ActivityMaster,
+#                                                                                                     ActivityMaster.activity ==
+#                                                                                                     permissions['value']).all()
+#                             for emp in emps:
+#                                 if emp.RoleActivityPermission.getattr(RoleActivityPermission, permissions['name']) == "yes":
+#                                     does_not_have_permissions = False
+#                                     break
+#                         elif 'customer' in permissions.keys():
+#                             does_not_have_permissions = False
+#                 if does_not_have_permissions:
+#                     unauthorised = True
+
+#             if unauthorised:
+#                 raise UnauthorisedAccessException(message="Un-authorized access exception")
+
+#             return f(*args, **kwargs)
+
+#         # Renaming the function name:
+#         wrapped_function.__name__ = f.__name__
+
+#         return wrapped_function
+
+#     return wrapper
 
 
 
