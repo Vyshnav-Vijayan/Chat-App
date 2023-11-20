@@ -1,11 +1,12 @@
 from flask import Flask,render_template,request,flash,redirect,url_for,session,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_socketio import SocketIO,join_room,leave_room,send
 import random,string
-import os
+import os,base64
 from string import ascii_uppercase
+
 app=Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"]='sqlite:///db.database'
@@ -15,16 +16,26 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 socketio = SocketIO(app,cors_allowed_origin="*")
 db=SQLAlchemy(app)
 
+
+
 class Users(db.Model):
     _id=db.Column("id",db.Integer,primary_key=True)
     name=db.Column(db.String(100))
     email=db.Column(db.String(100))
     password=db.Column(db.String(100))
+    token=db.Column(db.String(100))
+    token_expire=db.Column(db.String(100))
 
     def __init__(self,name,email,password):
         self.name=name
         self.email=email
         self.password=password
+    def generate_token(self,validity_duration_hours=1):
+        self.token = base64.b64encode(os.urandom(75)).decode('utf-8')
+        current_time = datetime.utcnow()
+        expire_time = current_time + timedelta(hours=validity_duration_hours)
+        expire_time_str = expire_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+        self.token_expire = expire_time_str
     def to_dict(self,propagation):
         data = {
             "id" :self._id,
@@ -163,21 +174,6 @@ def login():
     else:
         return render_template("login.html")
     
-# @app.route('/login_flutter',methods=["POST"])
-# def login_flutter():
-#         username = request.json.get('username')
-#         password = request.json.get('password')
-#         print("hello")
-#         user = Users.query.filter(Users.name == username).first()
-#         if user:
-#             if check_password_hash():
-#                 return jsonify({"status":"login successfull"})
-#             else:
-#                 return jsonify({"error":"failed"}),404
-                
-#         else:
-#             return jsonify({"error":"failed"}),404
-    
 
 @app.route('/login2',methods=['POST'])
 def login2():
@@ -213,6 +209,8 @@ def login2_flutter():
                 session["user_id"]=search._id
                 search2=Room.query.filter_by(user_id=search._id).first()
                 session["room_id"]=search2.room_id
+
+                search.generate_token()
 
                 v=Users.query.all()
                 value = [user.user_details() for user in v]
