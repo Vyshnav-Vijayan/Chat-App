@@ -356,8 +356,10 @@ def connect():
     print(search.name,"connected!")
 
 @socketio.on("message")
+@allowed_users()
 def get_and_store_message(data):
-    print("atlears rehced here")
+    token = request.headers.get('Authorization')[7:]
+    search=Users.query.filter_by(token=token).first()
     if data['message_input']:
         msg = data['message_input']
         sender = data['sender']
@@ -366,7 +368,7 @@ def get_and_store_message(data):
             "f_rid": data['sender'],
             "msg": data['message_input'],
             "t_rid": data["receiver"],
-            "name": session["name"]
+            "name": search.name
         }
         new_msg = Messages(msg,sender,receiver,data['currenttime'])
         db.session.add(new_msg)
