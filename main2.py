@@ -364,6 +364,7 @@ def get_and_store_message(data):
         msg = data['message_input']
         sender = data['sender']
         receiver = data['receiver']
+        print(msg)
         content = {
             "f_rid": data['sender'],
             "msg": data['message_input'],
