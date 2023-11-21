@@ -345,7 +345,10 @@ def chat_flutter():
 
 
 @socketio.on("connect")
+@allowed_users()
 def connect():
+    token = request.headers.get('Authorization')[7:]
+    print(token,"this is token")
     print("this is session :",session)
     user_name = session.get('name')
     room = session.get("room_id")
