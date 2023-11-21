@@ -120,18 +120,20 @@ class Messages(db.Model):
 
 room={}
 
-def allowed_users(token):
+def allowed_users():
     def wrapper(f):
 
         def wrapped_function(*args, **kwargs):
             unauthorised = False
-            
+            token = request.headers.get('Authorization')[7:]
+            print(token,"this is token")
             search=Users.query.filter_by(token=token).first()
             if search is None:
                 unauthorised = True
             else:
                 current_time = datetime.utcnow()
-                if current_time > search.token_expire:
+                token_time=datetime.strptime(search.token_expire,"%Y-%m-%d %H:%M:%S UTC")
+                if current_time > token_time:
                     unauthorised = True
 
             if unauthorised:
@@ -322,14 +324,14 @@ def chat(id):
 
 
 @app.route('/chat_flutter',methods=['POST'])
-# @allowed_users()
+@allowed_users()
 def chat_flutter():
     if request.method=="POST":
         id=request.json.get('login_Id')
         user_id=request.json.get('chat_PersonId')   
         usrf=Room.query.filter_by(user_id=user_id).first()
         usrt=Room.query.filter_by(user_id=id).first()
-        print(usrt)
+
         all_msg = Messages.query.filter(Messages.message_from.in_([usrf.room_id,usrt.room_id]),Messages.message_to.in_([usrf.room_id,usrt.room_id])).all()
         result = [user.user_message() for user in all_msg]
         print(result)
@@ -344,7 +346,7 @@ def chat_flutter():
 
 @socketio.on("connect")
 def connect():
-    print("this is session 2 ",session)
+    print("this is session :",session)
     user_name = session.get('name')
     room = session.get("room_id")
     join_room(room)
@@ -372,7 +374,7 @@ def get_and_store_message(data):
 
 socketio.on("disconnect")
 def disconnect():
-    user_name = session["name"]
+    user_name = session.get("name")
     room = session["room_id"]
     leave_room(room)
     print(user_name,": disconnected!")
