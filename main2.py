@@ -348,12 +348,12 @@ def chat_flutter():
 @allowed_users()
 def connect():
     token = request.headers.get('Authorization')[7:]
+    search=Users.query.filter_by(token=token).first()
+    search2=Room.query.filter_by(user_id=search._id).first()
+    room=search2.room_id
     print(token,"this is token")
-    print("this is session :",session)
-    user_name = session.get('name')
-    room = session.get("room_id")
     join_room(room)
-    print(user_name,"connected!")
+    print(search.name,"connected!")
 
 @socketio.on("message")
 def get_and_store_message(data):
